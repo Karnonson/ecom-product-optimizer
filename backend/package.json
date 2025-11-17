@@ -1,0 +1,35 @@
+{
+  "name": "ai-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "npx tsx --watch src/index.ts",
+    "build": "npx tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/multer": "^2.0.0",
+    "tsx": "^4.20.6",
+    "@types/papaparse": "^5.3.16",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@genkit-ai/dev-local-vectorstore": "^1.22.0",
+    "@genkit-ai/google-genai": "^1.22.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "genkit": "^1.22.0",
+    "llm-chunk": "^0.0.1",
+    "multer": "^2.0.2",
+    "papaparse": "^5.5.3",
+    "pdf-parse": "^2.4.5"
+  }
+}

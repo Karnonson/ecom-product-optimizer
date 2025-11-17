@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF File Upload & Management</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    h2, h3 { margin-bottom: 0.5em; }
+    form { margin-bottom: 1.5em; display: flex; flex-direction: column; gap: 0.5em; }
+    input[type="file"] { max-width: 300px; }
+    button { max-width: 150px; cursor: pointer; }
+    ul { list-style: none; padding: 0; margin-top: 1em; }
+    li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; background: #f4f4f4; padding: 0.5em 1em; border-radius: 4px; }
+    .file-name { flex: 1; word-break: break-word; }
+    nav { margin-top: 2em; }
+    nav a { margin-right: 1em; text-decoration: none; color: #007BFF; }
+    nav a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h2>Upload a PDF File to Be Indexed</h2>
+  <form id="upload-form" enctype="multipart/form-data">
+    <input type="file" name="pdfFile" accept=".pdf" required>
+    <button type="submit">Upload and Index</button>
+  </form>
+
+  <h3>Uploaded Files</h3>
+  <ul id="file-list">
+    <li>Loading files...</li>
+  </ul>
+
+  <nav>
+    <a href="/retriever.html">Go to Retriever</a>
+    <a href="/optimize.html">Go to Optimizer</a>
+  </nav>
+
+  <script>
+    const uploadForm = document.getElementById('upload-form');
+    const fileList = document.getElementById('file-list');
+
+    // Function to load and display uploaded files
+    async function loadFiles() {
+      fileList.innerHTML = '<li>Loading files...</li>';
+      try {
+        const response = await fetch('/files');
+        if (!response.ok) throw new Error(`Failed to load files: ${response.status}`);
+        const files = await response.json();
+
+        if (!files.length) {
+          fileList.innerHTML = '<li>No files uploaded yet.</li>';
+          return;
+        }
+
+        fileList.innerHTML = '';
+        files.forEach(file => {
+          const li = document.createElement('li');
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'file-name';
+
+          // Create clickable link to download/view file
+          const link = document.createElement('a');
+          link.href = file.url;
+          link.textContent = file.name;
+          link.target = '_blank';
+          nameSpan.appendChild(link);
+
+          // Delete button
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.addEventListener('click', async () => {
+            if (!confirm(`Are you sure you want to delete "${file.name}"?`)) return;
+            try {
+              const deleteResponse = await fetch(`/files/${encodeURIComponent(file.name)}`, { method: 'DELETE' });
+              if (!deleteResponse.ok) throw new Error(`Failed to delete file: ${deleteResponse.status}`);
+              loadFiles(); // Refresh list after deletion
+            } catch (err) {
+              alert(`Error deleting file: ${err.message}`);
+            }
+          });
+
+          li.appendChild(nameSpan);
+          li.appendChild(deleteBtn);
+          fileList.appendChild(li);
+        });
+      } catch (err) {
+        fileList.innerHTML = `<li>Error loading files: ${err.message}</li>`;
+      }
+    }
+
+    // Handle form submission for PDF uploads
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+
+      try {
+        const uploadResponse = await fetch('/upload', { method: 'POST', body: formData });
+        if (!uploadResponse.ok) throw new Error(`Upload failed with status ${uploadResponse.status}`);
+        const text = await uploadResponse.text();
+        alert(text); // Notify user of success
+        uploadForm.reset();
+        loadFiles(); // Refresh list
+      } catch (err) {
+        alert(`Error uploading file: ${err.message}`);
+      }
+    });
+
+    // Initial load
+    loadFiles();
+  </script>
+</body>
+</html>
