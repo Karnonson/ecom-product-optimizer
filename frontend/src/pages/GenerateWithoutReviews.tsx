@@ -18,7 +18,7 @@ import { FeedbackDropdown } from '@/components/FeedbackDropdown';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingCard } from '@/components/LoadingCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { analytics } from '@/lib/analytics';
+import { analytics, type AnalyticsProductInfo } from '@/lib/analytics';
 
 type Step = 'form' | 'result';
 type ProductSource = 'shopify' | 'manual' | null;
@@ -71,6 +71,17 @@ export default function GenerateWithoutReviews() {
   const [isCreating, setIsCreating] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [shopifyPreviewUrl, setShopifyPreviewUrl] = useState<string | null>(null);
+
+  const getAnalyticsProductInfo = (details?: Product | null): AnalyticsProductInfo | undefined => {
+    if (!details) return undefined;
+    const isShopifyProduct = productSource === 'shopify';
+    return {
+      title: details.name,
+      category: isShopifyProduct ? details.category : undefined,
+      sku: details.variants?.[0]?.sku || null,
+      source: isShopifyProduct ? 'shopify' : 'manual',
+    };
+  };
 
   const handleValidateSku = async () => {
     if (!sku.trim()) {
@@ -190,11 +201,7 @@ export default function GenerateWithoutReviews() {
       analytics.trackOptimize({
         method: 'withoutReviews',
         language,
-        product: {
-          title: currentProduct.name,
-          category: currentProduct.category,
-          sku: currentProduct.variants?.[0]?.sku || null,
-        },
+        product: getAnalyticsProductInfo(currentProduct),
       });
       const response = await fetch('/api/optimize', {
         method: 'POST',
@@ -206,7 +213,7 @@ export default function GenerateWithoutReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(result.newTitle);
+      setOptimizedTitle(currentProduct.name);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
   // when showing a new result for manual products, show the create-question again
@@ -233,11 +240,7 @@ export default function GenerateWithoutReviews() {
     analytics.trackRegenerate({
       method: 'withoutReviews',
       language,
-      product: {
-        title: product.name,
-        category: product.category,
-        sku: product.variants?.[0]?.sku || null,
-      },
+      product: getAnalyticsProductInfo(product),
     });
     const formData = new FormData();
 
@@ -261,8 +264,7 @@ export default function GenerateWithoutReviews() {
         throw new Error('Network response was not ok');
       }
 
-      const result = await response.json();
-      setOptimizedTitle(result.newTitle);
+        const result = await response.json();
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
   setAdjustmentPrompt(''); // Clear the prompt
@@ -282,6 +284,28 @@ export default function GenerateWithoutReviews() {
     }
   };
 
+  const handleReturnToForm = () => {
+    setProduct((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        name: optimizedTitle || prev.name,
+        currentDescription: optimizedDescription || prev.currentDescription,
+      };
+    });
+
+    if (productSource === 'manual') {
+      if (optimizedTitle) {
+        setManualTitle(optimizedTitle);
+      }
+      if (optimizedDescription) {
+        setManualDescription(optimizedDescription);
+      }
+    }
+
+    setStep('form');
+  };
+
   const handlePublish = async () => {
     if (!product) return;
 
@@ -290,11 +314,7 @@ export default function GenerateWithoutReviews() {
     analytics.trackPublish({
       method: 'withoutReviews',
       language,
-      product: {
-        title: product.name,
-        category: product.category,
-        sku: product.variants?.[0]?.sku || null,
-      },
+      product: getAnalyticsProductInfo(product),
     });
     try {
       const response = await fetch('/api/product/update', {
@@ -386,8 +406,7 @@ export default function GenerateWithoutReviews() {
           method: 'withoutReviews',
           language,
           product: {
-            title: product.name,
-            category: product.category,
+            ...getAnalyticsProductInfo(product),
             sku: manualSku || product.variants?.[0]?.sku || null,
           },
         });
@@ -416,7 +435,7 @@ export default function GenerateWithoutReviews() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setStep('form')}
+                onClick={handleReturnToForm}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('review.back')}
@@ -691,11 +710,7 @@ export default function GenerateWithoutReviews() {
                     analytics.trackFeedback(rating, {
                       method: 'withoutReviews',
                       language,
-                      product: {
-                        title: product.name,
-                        category: product.category,
-                        sku: product.variants?.[0]?.sku || null,
-                      },
+                      product: getAnalyticsProductInfo(product),
                     });
                   }}
                 />

@@ -3,10 +3,13 @@
 export type AnalyticsMethod = 'withReviews' | 'withoutReviews';
 export type AnalyticsEventType = 'optimize' | 'regenerate' | 'publish' | 'feedback' | 'analysis';
 
+export type AnalyticsProductSource = 'shopify' | 'manual';
+
 export interface AnalyticsProductInfo {
   title?: string;
   category?: string; // expected keys like 'shoes', 'pants', etc. if available
   sku?: string | null;
+  source?: AnalyticsProductSource;
 }
 
 export interface AnalyticsEventBase {
@@ -135,11 +138,13 @@ export interface StatsFilters {
 
 function normalizeCategory(cat?: string): string | undefined {
   if (!cat) return undefined;
-  const key = cat.trim().toLowerCase();
-  // simple normalization to known set when possible
-  const known = ['shoes', 'pants', 'shorts', 'tshirts', 'longsleeves', 'caps', 'underwear', 'socks', 'boots'];
-  const match = known.find((k) => key.includes(k));
-  return match || key;
+  return cat.trim();
+}
+
+function getShopifyCategory(product?: AnalyticsProductInfo): string | undefined {
+  if (!product?.category) return undefined;
+  if (product.source && product.source !== 'shopify') return undefined;
+  return normalizeCategory(product.category);
 }
 
 function applyFilters(events: AnalyticsEvent[], filters: StatsFilters): AnalyticsEvent[] {
@@ -148,7 +153,7 @@ function applyFilters(events: AnalyticsEvent[], filters: StatsFilters): Analytic
     if (from && e.ts < from) return false;
     if (to && e.ts > to) return false;
     if (productTypes && productTypes.length > 0) {
-      const cat = normalizeCategory(e.product?.category);
+      const cat = getShopifyCategory(e.product);
       if (!cat || !productTypes.includes(cat)) return false;
     }
     if (ratings && ratings.length > 0 && (e as FeedbackEvent).type === 'feedback') {
@@ -199,23 +204,23 @@ export function getCategoryBreakdown(filters: StatsFilters = {}): CategoryBreakd
   const events = applyFilters(getEvents() as AnalyticsEvent[], filters);
 
   const map = new Map<string, CategoryBreakdownItem>();
-  const ensure = (raw?: string): CategoryBreakdownItem | null => {
-    const key = normalizeCategory(raw);
-    if (!key) return null;
-    if (!map.has(key)) {
-      map.set(key, {
-        category: key,
+  const ensure = (category?: string): CategoryBreakdownItem | null => {
+    if (!category) return null;
+    if (!map.has(category)) {
+      map.set(category, {
+        category,
         requestCount: 0,
         publishCount: 0,
         method: { withReviews: 0, withoutReviews: 0 },
         ratings: [0, 0, 0, 0, 0],
       });
     }
-    return map.get(key)!;
+    return map.get(category)!;
   };
 
   for (const e of events) {
-    const item = ensure(e.product?.category);
+    const category = getShopifyCategory(e.product);
+    const item = ensure(category);
     if (!item) continue;
     if (e.type === 'optimize' || e.type === 'regenerate') {
       item.requestCount += 1;

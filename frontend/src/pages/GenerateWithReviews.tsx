@@ -168,6 +168,7 @@ export default function GenerateWithReviews() {
           title: product.name,
           category: product.category,
           sku: product.variants?.[0]?.sku || null,
+          source: 'shopify',
         },
       });
     }
@@ -205,7 +206,7 @@ export default function GenerateWithReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(result.newTitle);
+      setOptimizedTitle(product?.name ?? '');
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
       // Track negative/positive summaries from optimize result
@@ -219,6 +220,7 @@ export default function GenerateWithReviews() {
               title: product.name,
               category: product.category,
               sku: product.variants?.[0]?.sku || null,
+              source: 'shopify',
             },
           }
         );
@@ -248,6 +250,7 @@ export default function GenerateWithReviews() {
         title: product.name,
         category: product.category,
         sku: product.variants?.[0]?.sku || null,
+        source: 'shopify',
       },
     });
     const formData = new FormData();
@@ -274,7 +277,7 @@ export default function GenerateWithReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(result.newTitle);
+      setOptimizedTitle(product.name);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
       setAdjustmentPrompt(''); // Clear the prompt
@@ -302,6 +305,7 @@ export default function GenerateWithReviews() {
         title: product.name,
         category: product.category,
         sku: product.variants?.[0]?.sku || null,
+        source: 'shopify',
       },
     });
     try {
@@ -343,6 +347,18 @@ export default function GenerateWithReviews() {
     }
   };
 
+  const handleReturnToForm = () => {
+    setProduct((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        name: optimizedTitle || prev.name,
+        currentDescription: optimizedDescription || prev.currentDescription,
+      };
+    });
+    setStep('form');
+  };
+
   if (step === 'result' && product) {
     return (
       <div className="min-h-screen bg-background">
@@ -355,7 +371,7 @@ export default function GenerateWithReviews() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setStep('form')}
+                onClick={handleReturnToForm}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('review.back')}
@@ -556,6 +572,7 @@ export default function GenerateWithReviews() {
                         title: product.name,
                         category: product.category,
                         sku: product.variants?.[0]?.sku || null,
+                        source: 'shopify',
                       },
                     });
                   }}
