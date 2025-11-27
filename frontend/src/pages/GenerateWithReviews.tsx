@@ -206,7 +206,7 @@ export default function GenerateWithReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(product?.name ?? '');
+      setOptimizedTitle(result.newTitle);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
       // Track negative/positive summaries from optimize result
@@ -277,7 +277,7 @@ export default function GenerateWithReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(product.name);
+      setOptimizedTitle(result.newTitle);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
       setAdjustmentPrompt(''); // Clear the prompt

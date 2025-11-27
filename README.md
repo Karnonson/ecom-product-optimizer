@@ -48,9 +48,13 @@ Voici les dépendances principales :
 * **pdf-parse** – Extraction de texte à partir de documents PDF.
 * **dotenv** – Gestion des variables d'environnement.
 
+### **Base de données vectorielle et modèle d'IA**
+
+Pour la base de données vectorielle, nous avons utilisé celle intégrée à Genkit pour sa simplicité et son efficacité. Même si elle n’est pas adaptée à la production, elle convient pour un prototype. Nos tests montrent que gemini-2.5-pro offre les meilleures performances, mais il est limité à deux requêtes par minute. Nous avons donc retenu gemini-2.5-flash, qui en accepte dix, avec flash-lite comme solution de repli en cas d’indisponibilité. Faute de temps, le prototype n’a pas été déployé, mais il reste testable en local.
+
 ### **Gestion**
 
-`pnpm` pour la gestion des dépendances, `Makefile` pour l'automatisation.
+`pnpm` pour la gestion des dépendances, `Makefile` pour lancement automatique de l'application.
 
 ## Structure du dépôt
 
@@ -101,7 +105,7 @@ Voici les dépendances principales :
 
 ```bash
 # Cloner le dépôt
-git clone <URL_DU_DÉPÔT>
+git clone <URL_DU_DÉPÔT> // Forker si voulez faire des modifications
 cd ai-product-optimizer
 
 # Backend
@@ -114,6 +118,8 @@ pnpm install
 ```
 
 ### Exécution en développement
+
+* Pour lancer le backend et le frontend séparément :
 
 ```bash
 # Backend
@@ -133,21 +139,22 @@ Le frontend est accessible sur `http://localhost:8080` et le backend sur `http:/
 make dev
 ```
 
-### Build et production
-
-```bash
-# Backend
-cd backend
-pnpm run build
-pnpm run start
-
-# Frontend
-cd ../frontend
-pnpm run build
-pnpm run preview
-```
-
-## Données et stockage
+## Remarque sur les données et stockage
 
 * Fichiers téléversés : `backend/src/files/` (à ne pas versionner).
 * Base de données vectorielle locale : `backend/__db_guidelinesQA.json` (nettoyée lors de la suppression de fichiers).
+
+## Limitations
+
+Le serveur backend présente plusieurs limitations :
+
+* Faible modularisation
+* Absence de tests unitaires
+* Gestion des erreurs limitée
+* Pas de système de gestion des utilisateurs
+* Aucune base de données pour la persistance des données
+* Pas de log pour le débogage
+
+## Remarques finales
+
+Cette documentation a été adaptée de la documentation générée par l’IA (Extension GitHub Copilot). La version initiale est disponible dans le dossier ai-chats sous le nom `docs.md`. Il m’a aussi assité dans la conception du code du backend.

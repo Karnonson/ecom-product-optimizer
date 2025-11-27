@@ -31,6 +31,7 @@ const ProductDetailsInputSchema = z.object({
 });
 
 const ProductDetailsOutputSchema = z.object({
+  newTitle: z.string().describe('The translated name of the product (NOT the marketing headline)'),
   newDescription: z.string().describe('A new, optimized product description'),
   justifications: z.string().describe("Justification of the new description."),
   positiveSummary: z.string().describe('Summary of positive reviews').optional(),
@@ -112,11 +113,12 @@ Generate one revised JSON output. Your goal is to apply the User Feedback to the
 
 Your JSON response must contain the following keys:
 
-1.  ** newDescription **: A revised product description. 
+1.  ** newTitle **: The translated product name (e.g. "iPhone 15"). This is NOT the marketing headline.
+2.  ** newDescription **: A revised product description. 
       * It must incorporate positive themes from reviews.
       * It must (where possible) address common concerns from negative reviews.
       * It must strictly follow the style, tone, and rules from the  Retrieved Context .
-      * Add two line breaks between the first line (title) and the rest of the description.
+      * Add two line breaks between the first line (Marketing Headline) and the rest of the description.
 2.  ** justifications **: An updated explanation for the *new* changes.
       * **Part 1 (Change Rationale):** Explain what you changed *from the previous output* and why, specifically mentioning how you addressed the  User Feedback  and adhered to guidelines.
       * **Part 2 (Review Evidence):** If reviews were used, cite **3 to 5 specific customer reviews** that support your *new* version. Use the format:  "[CustomerID] ([Date]): '[Relevant review snippet]'." 
@@ -137,6 +139,7 @@ Respond **only with a single**, valid JSON object. Do not include any explanator
 
 Example:
 {
+  "newTitle": "string",
   "newDescription": "string",
   "justifications": "string",
 }

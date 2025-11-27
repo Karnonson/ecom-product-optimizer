@@ -15,7 +15,7 @@ import {updateProduct} from './shopify/updateProduct.js'
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT?? 3000;
+const port = process.env.PORT?? 4461;
 
 // determine path to local vectorstore DB file (__db_guidelinesQA.json) relative to this file
 // use import.meta.url to compute __dirname in ESM

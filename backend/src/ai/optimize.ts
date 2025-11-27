@@ -33,6 +33,7 @@ const ProductDetailsInputSchema = z.object({
 });
 
 const ProductDetailsOutputSchema = z.object({
+  newTitle: z.string().describe('The translated name of the product (NOT the marketing headline)'),
   newDescription: z.string().describe('A new, optimized product description'),
   justifications: z.string().describe("Justification of the new description."),
   positiveSummary: z.string().describe('Summary of positive reviews').optional(),
@@ -79,7 +80,7 @@ export const optimizeProductDetails = ai.defineFlow(
 You will be provided with the following information:
 
 1.  ** Retrieved Context **: Contains mandatory company guidelines, style examples, and lists of allowed or disallowed words/phrases.
-2.  ** Product Data **: Contains the existing product title, description, and feature list.
+2.  ** Product Data **: Contains the existing product name, description, and feature list.
 3.  ** Customer Reviews  (Optional)**: A list of customer reviews, which may include user ID, date, rating, and review text.
 
 ### Retrieved Context
@@ -104,11 +105,13 @@ Based *only* on the provided  Retrieved Context ,  Product Data , and (if availa
 **Your justification language should be the same as your new description’s language.**
 **Always follow the format of the description provided in the context to write yours** 
 **Pay close attention to words to exclude in the descriptions and titles (headlines).**
+**Always answer entirely in the language selected by the user, even if the user's instructions are written in a different language.**
 
 ### Conditional Logic
 
   * **If  Customer Reviews  ARE provided:** You must complete **all** fields in the JSON response. Use the reviews to inform the new description, address concerns, and generate summaries and recommendations.
   * **If  Customer Reviews  ARE NOT provided:** You must generate the newDescription and  justifications. Then The  positiveSummary ,  negativeSummary , and  recommendations  fields **must be empty strings ( "" )**.
+  *   * **If  Customer Reviews  ARE NOT provided:** Don’t mention the  positiveSummary ,  negativeSummary , and  recommendations  in your response. And set their values to empty strings ( "" ) in the JSON.
   * **If  Customer Reviews  are irrelevant or mismatched to the product (The product's SKU is different from the reviews’s SKU):** State it clearly (example: "Reviews do not match the product") in the justifications and do not use them to inform the new description.
   * **If the User Feedback contradicts the Retrieved Context , prioritize the Retrieved Context . Then mention this in the justifications.**
 
@@ -116,11 +119,12 @@ Based *only* on the provided  Retrieved Context ,  Product Data , and (if availa
 
 Your JSON response must contain the following keys:
 
-1.  ** newDescription **: A persuasive and detailed new product description.
+1.  ** newTitle **: The translated product name (e.g. "iPhone 15"). This is NOT the marketing headline.
+2.  ** newDescription **: A persuasive and detailed new product description.
       * It must incorporate positive themes from reviews.
       * It must (where possible) address common concerns from negative reviews.
       * It must strictly follow the style, tone, and rules from the  Retrieved Context .
-      * Add two line breaks between the first line (title) and the rest of the description.
+      * Add two line breaks between the first line (Marketing Headline) and the rest of the description.
 2.  ** justifications **: A two-part explanation:
       * **Part 1 (Change Rationale):** Briefly explain the key changes made and why the new content is an improvement (e.g., "Aligned with company guidelines by removing [disallowed word]," "Incorporated key positive theme of 'ease of use' from reviews").
       * **Part 2 (Review Evidence):** If reviews were used, cite **3 to 5 specific customer reviews** that directly influenced the changes. Use the format:  "[CustomerID] ([Date]): '[Relevant review snippet]'." 
@@ -132,7 +136,7 @@ Your JSON response must contain the following keys:
 
   * **Guidelines are Absolute:** You *must* prioritize the  Retrieved Context  (company guidelines) above all else. If a review suggestion or user instruction conflicts with a guideline, the guideline *always* wins.
   * **No Fabrication:** Do not invent information, features, or review details. Your response must be based *solely* on the provided data.
-  * **No ALL CAPS:** Never generate an all-uppercase response (except the first line (title) in the description).
+  * **No ALL CAPS:** Never generate an all-uppercase response (except the first line (Marketing Headline) in the description).
   * **Traceability:** All justifications must be traceable to the provided input data.
   * **The new description should be at least 50 words and max 120 words.**
   * **Language Consistency:** Always answer entirely in the language selected by the user, even if the user's instructions are written in a different language.
@@ -144,6 +148,7 @@ Your JSON response must contain the following keys:
 Respond **only with a single**, valid JSON object. Each element inside the JSON object must be an string, **not an object**. Do not include any explanatory text, markdown formatting (like \ \ \ json), or code fences before or after the JSON.
 
 {
+  "newTitle": "string",
   "newDescription": "string",
   "justifications": "string",
   "positiveSummary": "string",

@@ -213,7 +213,7 @@ export default function GenerateWithoutReviews() {
       }
 
       const result = await response.json();
-      setOptimizedTitle(currentProduct.name);
+      setOptimizedTitle(result.newTitle);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
   // when showing a new result for manual products, show the create-question again
@@ -265,6 +265,7 @@ export default function GenerateWithoutReviews() {
       }
 
         const result = await response.json();
+      setOptimizedTitle(result.newTitle);
       setOptimizedDescription(result.newDescription);
       setJustifications(result.justifications || '');
   setAdjustmentPrompt(''); // Clear the prompt
