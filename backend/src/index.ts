@@ -236,7 +236,7 @@ app.get('/files', async (_req, res) => {
         url: `/uploads/${encodeURIComponent(file)}`,
         size: stat.size,
         // expose upload/creation date and type if known
-        uploadDate: stat.birthtime?.toISOString?.() || stat.ctime?.toISOString?.() || undefined,
+        uploadDate: stat.mtime?.toISOString?.() || stat.ctime?.toISOString?.() || undefined,
         fileType: fileTypeByName[file] || undefined,
       };
     });
