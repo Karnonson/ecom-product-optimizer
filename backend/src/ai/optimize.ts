@@ -127,7 +127,7 @@ Your JSON response must contain the following keys:
       * Add two line breaks between the first line (Marketing Headline) and the rest of the description.
 2.  ** justifications **: A two-part explanation:
       * **Part 1 (Change Rationale):** Briefly explain the key changes made and why the new content is an improvement (e.g., "Aligned with company guidelines by removing [disallowed word]," "Incorporated key positive theme of 'ease of use' from reviews").
-      * **Part 2 (Review Evidence):** If reviews were used, cite **3 to 5 specific customer reviews** that directly influenced the changes. Use the format:  "[CustomerID] ([Date]): '[Relevant review snippet]'." 
+      * **Part 2 (Review Evidence):** If reviews were used, cite **3 to 5 specific customer reviews** that directly influenced the changes and how. Use the format:  "[CustomerID] ([Date]): '[Relevant review snippet] \n [How it was used]'." 
 3.  ** positiveSummary **: A brief summary of the key positive themes and compliments from customer reviews.
 4.  ** negativeSummary **: A brief summary of the key negative themes, common complaints, and concerns from customer reviews.
 5.  ** recommendations **: Actionable recommendations for product improvement or marketing adjustments based on the  negativeSummary . If no constructive negative feedback exists, state:  "No actionable recommendations from reviews." 
